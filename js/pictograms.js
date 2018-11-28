@@ -37,7 +37,7 @@ PictogramNameSpace = function(){
 
 
   function buildStage(images) {
-
+    // Static image on the center
     var youImg = new Konva.Image({
         image: images.you,
         x: width * 0.4,
@@ -46,7 +46,7 @@ PictogramNameSpace = function(){
         height: 150,
         draggable: false
     });
-
+    // Draggable images
     var confidenceImg = new Konva.Image({
       image: images.confidence,
       x: 5,
@@ -91,16 +91,43 @@ PictogramNameSpace = function(){
     });
     calculateDistance(teamworkImg, youImg);
 
-
     layer.add(confidenceImg);
     layer.add(researchImg);
     layer.add(managImg);
     layer.add(teamworkImg);
     layer.add(youImg);
     stage.add(layer);
+
+
+    // Zoom ratio
+    var scaleBy = 1.3;
+    // Zoom by scrolling the mouse wheel
+    window.addEventListener('wheel', (e) => {
+      e.preventDefault();
+
+      var oldScale = stage.scaleX();
+      var newScale = e.deltaY > 0 ? oldScale * scaleBy : oldScale / scaleBy;
+
+      // Zoom in relation to mouse position
+      var mousePointTo = {
+          x: stage.getPointerPosition().x / oldScale - stage.x() / oldScale,
+          y: stage.getPointerPosition().y / oldScale - stage.y() / oldScale,
+      };
+      var newPos = {
+          x: -(mousePointTo.x - stage.getPointerPosition().x / newScale) * newScale,
+          y: -(mousePointTo.y - stage.getPointerPosition().y / newScale) * newScale
+      };
+
+      // Min and max parameters for the zooming
+      if (newScale > 0.15 && 2 > newScale) {
+        stage.scale({ x: newScale, y: newScale });
+        stage.position(newPos);
+      }
+      stage.batchDraw();
+    });
   }
 
-
+  // Calculate the distance from the draggable image to the center static image
   function calculateDistance(image, youImg) {
     image.on("dragmove", function() {
       document.getElementById("pic" + image.getId()).innerHTML =
